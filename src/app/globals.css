@@ -1,0 +1,392 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+:root.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+/* Inline math (e.g. $P(d_1)$ sitting mid-sentence) can otherwise get
+   line-broken in the middle of a formula by the browser's normal text
+   wrapping — the formula itself shouldn't wrap, only the prose around
+   it. */
+.katex {
+  white-space: nowrap;
+}
+
+/* @tailwindcss/typography decorates inline <code> with literal backtick
+   pseudo-elements. Every post writes predicate and identifier names as
+   inline code, so that shows up as stray ` characters scattered through
+   the prose. The plugin wraps its own rules in :where(...), which carries
+   zero specificity, so a plain selector is enough to switch them off —
+   no !important, and block-level code (pre[data-theme], .code-compare
+   pre) is untouched because the plugin never adds them there. */
+.prose code::before,
+.prose code::after {
+  content: none;
+}
+
+/* Topic bubbles: each carries a --hue custom property (see
+   topic-colors.ts) and gets colored via this formula rather than a fixed
+   gray, so the set reads as a coordinated palette. Kept deliberately
+   translucent — a soft tint of the page background, not a filled chip —
+   with separate light/dark formulas since the same hue/alpha pair reads
+   very differently against white vs. near-black. Position is driven by
+   JS (topic-bubble-field.tsx runs the collision simulation and writes
+   transform: translate3d directly), so this file only owns color. */
+.topic-bubble {
+  background: hsl(var(--hue) 65% 52% / 0.12);
+  border: 1px solid hsl(var(--hue) 65% 45% / 0.28);
+  box-shadow: 0 0 20px hsl(var(--hue) 65% 50% / 0.08);
+}
+
+.topic-bubble:hover,
+.topic-bubble:focus-visible {
+  background: hsl(var(--hue) 68% 52% / 0.2);
+  border-color: hsl(var(--hue) 68% 45% / 0.45);
+}
+
+:root.dark .topic-bubble {
+  background: hsl(var(--hue) 80% 68% / 0.14);
+  border-color: hsl(var(--hue) 80% 70% / 0.3);
+  box-shadow: 0 0 28px hsl(var(--hue) 80% 65% / 0.12);
+}
+
+:root.dark .topic-bubble:hover,
+:root.dark .topic-bubble:focus-visible {
+  background: hsl(var(--hue) 82% 70% / 0.24);
+  border-color: hsl(var(--hue) 82% 72% / 0.5);
+}
+
+/* Inline emphasis for the part of a name that tells it from its
+   neighbour: the b in ProbLog against Prolog, Deep in DeepProbLog
+   against ProbLog. Marked on every occurrence, not a few — a post that
+   names both throughout and highlights only some of them leaves the
+   reader working out which one each sentence meant. */
+.accent-letter {
+  color: #ea580c;
+  font-weight: 700;
+}
+
+:root.dark .accent-letter {
+  color: #fb923c;
+}
+
+/* Side-by-side code comparisons in post prose (e.g. Prolog vs ProbLog).
+   Plain custom CSS rather than Tailwind utility classes on the markdown
+   itself, since content/reading_notes/*.md isn't a source file Tailwind's
+   scanner necessarily covers. These selectors beat the typography
+   plugin's defaults without !important because @tailwindcss/typography
+   wraps its own rules in :where(...), which carries zero specificity. */
+.code-compare {
+  display: grid;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+
+@media (min-width: 640px) {
+  .code-compare {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.code-compare-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--foreground);
+  opacity: 0.5;
+}
+
+.code-compare pre {
+  margin: 0;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  padding: 1rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  overflow-x: auto;
+}
+
+/* Typography plugin's dark-mode `code` color is a washed-out gray tuned
+   for inline code, not a full-height pre block — override to the full
+   foreground color so code text has real contrast against the subtle
+   pre background above. */
+.code-compare pre code {
+  color: var(--foreground);
+  opacity: 0.85;
+  background: none;
+  padding: 0;
+  font-weight: 400;
+}
+
+/* Two procedures side by side, step for step. Same display:contents trick
+   as .code-annotated: each row is a div holding the two cells, so a step
+   that runs long on one side still lines up with its counterpart on the
+   other.
+
+   Below 640px the columns collapse and the two sides interleave, which
+   would be unreadable without knowing which is which — hence data-side,
+   printed as a small label only at that width. */
+.step-compare {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem 1.75rem;
+  margin: 1.5rem 0;
+}
+
+@media (min-width: 640px) {
+  .step-compare {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.step-compare > div {
+  display: contents;
+}
+
+.step-compare p {
+  margin: 0;
+  border-top: 1px solid color-mix(in srgb, var(--foreground) 12%, transparent);
+  padding-top: 0.7rem;
+  font-size: 0.85rem;
+  line-height: 1.55;
+  color: var(--foreground);
+  opacity: 0.75;
+}
+
+.step-compare .step-compare-label {
+  border-top: none;
+  padding-top: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.5;
+}
+
+@media (max-width: 639px) {
+  .step-compare .step-compare-label {
+    display: none;
+  }
+
+  .step-compare p[data-side]::before {
+    content: attr(data-side);
+    display: block;
+    margin-bottom: 0.15rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.55;
+  }
+}
+
+/* A program with a note against each line. Two grid columns — the line
+   itself, then what it means — with each row wrapped in a div that is
+   display:contents, so the wrapper groups the pair in the markup without
+   creating a box of its own and both cells land directly in the parent
+   grid. That is what keeps a note aligned with its line even when the
+   note wraps to two lines and the code does not.
+
+   Below 640px the two columns would leave nothing usable for either, so
+   the grid collapses and each note sits under its line instead. */
+.code-annotated {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.15rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--foreground) 6%, transparent);
+  padding: 1rem;
+  overflow-x: auto;
+}
+
+@media (min-width: 640px) {
+  .code-annotated {
+    grid-template-columns: max-content 1fr;
+    gap: 0.35rem 1.5rem;
+  }
+}
+
+.code-annotated > div {
+  display: contents;
+}
+
+.code-annotated code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  white-space: pre;
+  color: var(--foreground);
+  opacity: 0.85;
+}
+
+.code-annotated p {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--foreground);
+  opacity: 0.55;
+}
+
+@media (min-width: 640px) {
+  .code-annotated p {
+    margin: 0;
+  }
+}
+
+/* A blank line in the program, kept so the facts and the rules read as
+   two groups. */
+.code-annotated .gap code,
+.code-annotated .gap p {
+  height: 0.7rem;
+}
+
+/* rehype-pretty-code (Shiki) marks its output with a data-theme
+   attribute rather than a fixed class, and — in this version — doesn't
+   apply either theme's actual color/background itself: every element
+   just carries --shiki-light/--shiki-dark(-bg) custom properties, and
+   it's up to this stylesheet to read the right pair. Each token span
+   redefines these variables inline with its own color, so the rule has
+   to target `span` too, not just the outer `pre` — otherwise every
+   token would inherit one flat color instead of being highlighted. */
+pre[data-theme] {
+  border-radius: 0.5rem;
+  padding: 1rem;
+  overflow-x: auto;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  color: var(--shiki-light);
+  background-color: var(--shiki-light-bg);
+}
+
+pre[data-theme] span {
+  color: var(--shiki-light);
+}
+
+:root.dark pre[data-theme] {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
+
+:root.dark pre[data-theme] span {
+  color: var(--shiki-dark) !important;
+}
+
+/* Hand-drawn inline-SVG diagrams in post prose (SLD-tree, BDD, ...).
+   currentColor throughout the SVG means no dark-mode-specific rules are
+   needed here — each diagram just inherits whatever text color the
+   theme already resolves to. */
+.paper-diagram {
+  margin: 1.75rem 0;
+  overflow-x: auto;
+}
+
+.paper-diagram svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-width: 620px;
+  margin: 0 auto;
+  color: var(--foreground);
+}
+
+.paper-diagram figcaption {
+  margin-top: 0.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--foreground);
+  opacity: 0.5;
+}
+
+/* Three worked examples, paginated instead of squeezed side by side —
+   the article column can't fit three code blocks at a readable width,
+   so only one example shows at a time. Pure CSS (no client component:
+   post content is injected as a raw HTML string via
+   dangerouslySetInnerHTML, so it can't mount React state) — hidden
+   radio inputs + labels-as-buttons is the standard no-JS tab pattern.
+   Inputs must be earlier DOM siblings of everything they control, so
+   both the nav and the panels sit after them at the same nesting level,
+   reachable via the ~ general-sibling combinator. */
+.example-pager-radio {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.example-pager-nav {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1.5rem 0 1rem;
+}
+
+.example-pager-nav label {
+  cursor: pointer;
+  border-radius: 9999px;
+  border: 1px solid color-mix(in srgb, var(--foreground) 15%, transparent);
+  padding: 0.3rem 0.85rem;
+  font-size: 0.8rem;
+  color: color-mix(in srgb, var(--foreground) 60%, transparent);
+  transition: color 0.2s, border-color 0.2s, background-color 0.2s;
+}
+
+.example-pager-nav label:hover {
+  border-color: color-mix(in srgb, var(--foreground) 30%, transparent);
+  color: var(--foreground);
+}
+
+/* All three panels stack in the same grid cell so the grid track sizes
+   to the tallest one regardless of which is showing — visibility:hidden
+   (not display:none) keeps every panel counted in that height
+   calculation even while it's the two that aren't switched on. Without
+   this, flipping to a shorter example would collapse the container and
+   jump everything below it up the page. */
+.example-pager-panels {
+  display: grid;
+}
+
+.example-pager-panel {
+  grid-area: 1 / 1;
+  visibility: hidden;
+}
+
+#example-tab-1:checked ~ .example-pager-panels #example-panel-1,
+#example-tab-2:checked ~ .example-pager-panels #example-panel-2,
+#example-tab-3:checked ~ .example-pager-panels #example-panel-3 {
+  visibility: visible;
+}
+
+#example-tab-1:checked ~ .example-pager-nav label[for="example-tab-1"],
+#example-tab-2:checked ~ .example-pager-nav label[for="example-tab-2"],
+#example-tab-3:checked ~ .example-pager-nav label[for="example-tab-3"] {
+  border-color: var(--foreground);
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
+}
+
+.example-pager-panel .example-desc {
+  margin: 0 0 0.75rem;
+  font-size: 0.85rem;
+  color: var(--foreground);
+  opacity: 0.65;
+}
