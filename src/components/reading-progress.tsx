@@ -59,23 +59,21 @@ export function ReadingProgress({ headings }: { headings: Heading[] }) {
             <li key={h.id}>
               <a
                 href={`#${h.id}`}
-                title={h.text}
-                className="flex items-center gap-3"
+                className="flex items-start gap-3"
               >
                 <span
                   aria-hidden="true"
-                  className={`shrink-0 rounded-full transition-all duration-300 ${
+                  className={`mt-2 shrink-0 rounded-full transition-all duration-300 ${
                     read
                       ? "h-[3px] w-6 bg-foreground"
                       : "h-px w-6 bg-foreground/30"
                   }`}
                 />
-                {/* Capped and ellipsised: a long section title would
+                {/* Capped and wrapped: a long section title would
                     otherwise widen the nav past the gutter and back under
-                    the article column. Full text stays available as the
-                    link's title attribute. */}
+                    the article column. */}
                 <span
-                  className={`max-w-[13rem] truncate text-xs transition-colors duration-300 ${
+                  className={`max-w-[13rem] text-xs leading-snug transition-colors duration-300 ${
                     read ? "text-foreground" : "text-foreground/40"
                   }`}
                 >

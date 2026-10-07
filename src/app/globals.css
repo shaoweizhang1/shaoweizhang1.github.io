@@ -36,8 +36,8 @@ body {
    inline code, so that shows up as stray ` characters scattered through
    the prose. The plugin wraps its own rules in :where(...), which carries
    zero specificity, so a plain selector is enough to switch them off —
-   no !important, and block-level code (pre[data-theme], .code-compare
-   pre) is untouched because the plugin never adds them there. */
+   no !important, and block-level code (pre[data-theme]) is untouched
+   because the plugin never adds them there. */
 .prose code::before,
 .prose code::after {
   content: none;
@@ -94,17 +94,30 @@ body {
    itself, since content/reading_notes/*.md isn't a source file Tailwind's
    scanner necessarily covers. These selectors beat the typography
    plugin's defaults without !important because @tailwindcss/typography
-   wraps its own rules in :where(...), which carries zero specificity. */
+   wraps its own rules in :where(...), which carries zero specificity.
+   minmax(0, 1fr): a long code line scrolls inside its pre instead of
+   widening the column past the page. */
 .code-compare {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 1rem;
   margin: 1.5rem 0;
 }
 
 @media (min-width: 640px) {
   .code-compare {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
+}
+
+/* Set by CodeCompareFit when one side's code would not fit its half. */
+.code-compare.code-compare-stacked {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* A single column takes the full width: a labelled block for one example. */
+.code-compare > div:only-child {
+  grid-column: 1 / -1;
 }
 
 .code-compare-label {
@@ -117,26 +130,16 @@ body {
   opacity: 0.5;
 }
 
+/* The code inside is a highlighted fence: it keeps a subtle background in
+   both themes instead of Shiki's. */
+.code-compare figure,
 .code-compare pre {
   margin: 0;
-  border-radius: 0.5rem;
-  background: color-mix(in srgb, var(--foreground) 6%, transparent);
-  padding: 1rem;
-  font-size: 0.8rem;
-  line-height: 1.6;
-  overflow-x: auto;
 }
 
-/* Typography plugin's dark-mode `code` color is a washed-out gray tuned
-   for inline code, not a full-height pre block — override to the full
-   foreground color so code text has real contrast against the subtle
-   pre background above. */
-.code-compare pre code {
-  color: var(--foreground);
-  opacity: 0.85;
-  background: none;
-  padding: 0;
-  font-weight: 400;
+.code-compare pre[data-theme],
+:root.dark .code-compare pre[data-theme] {
+  background-color: color-mix(in srgb, var(--foreground) 6%, transparent) !important;
 }
 
 /* Two procedures side by side, step for step. Same display:contents trick

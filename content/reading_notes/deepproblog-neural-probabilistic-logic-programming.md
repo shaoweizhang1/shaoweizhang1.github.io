@@ -45,7 +45,7 @@ And importantly, each fact is just its own yes/no choice. Nothing here says that
 
 Often the alternatives exclude each other and their probabilities add up to one — like the severity of an earthquake: Nothing happens: 0.4; Mild earthquake: 0.4; Severe: 0.2. With Step 1 alone you have to build that by hand:
 
-```prolog
+```problog
 0.4::a1.
 0.6667::a2.
 
@@ -58,7 +58,7 @@ Now you need sequential tests, negation to keep the cases separate, and rescaled
 
 Pro<span class="accent-letter">b</span>Log has a short form for that case: semicolons instead of separate lines.
 
-```prolog
+```problog
 0.4::earthquake(none); 0.4::earthquake(mild); 0.2::earthquake(severe).
 ```
 
@@ -73,14 +73,14 @@ A softmax over n classes outputs n non-negative numbers that add up to one. That
 
 An ordinary AD uses the same probabilities every time. For example:
 
-```prolog
+```problog
 0.1::result(excellent); 0.5::result(pass); 0.4::result(fail).
 ```
 
 This says that the probabilities are always 0.1, 0.5, and 0.4. But for something like an exam result, we probably want them to depend on the student.
 <span class="accent-letter">Deep</span>ProbLog lets a neural network produce those numbers:
 
-```prolog
+```problog
 nn(m_exam, Student, [excellent,pass,fail]) ::
     result(Student,excellent);
     result(Student,pass);
@@ -104,7 +104,7 @@ This is basically the whole extension: the logic stays the same; the probabiliti
 
 The paper's example is MNIST addition. The whole program is basically two lines:
 
-```prolog
+```problog
 nn(m_digit, X, [0,...,9]) :: digit(X,0); ... ; digit(X,9).
 
 addition(X,Y,Z) :- digit(X,X2), digit(Y,Y2), Z is X2+Y2.
@@ -130,7 +130,7 @@ Take the burglary program as example: from Step 1 for `calls(mary)`. Pro<span cl
 **1. Ground.** Keep only the clauses the query depends on, and fill in the variables::
 
 
-```prolog
+```problog
 0.2::earthquake.
 0.1::burglary.
 alarm :- earthquake.
@@ -351,7 +351,7 @@ That interface is the key idea. Most of the machinery on either side — Pro<spa
 
 ## Experiments and Reproduction
 
-I reproduced all six experiments in the paper on one machine, using the official [library](https://github.com/ML-KULeuven/deepproblog) as a normal pip dependency. Nothing is copied into my own codebase, so what I am testing is the library's behaviour rather than my own reimplementation. Every hyperparameter is a flag and every run is a shell script; the code, logs and figures are all [on GitHub](https://github.com/shaoweizhang1/DeepProbLog_Reproduction).
+I reproduced all six experiments in the paper on one machine, using the official [library](https://github.com/ML-KULeuven/deepproblog) as a normal pip dependency. Nothing is copied into my own codebase, so what I am testing is the library's behaviour rather than my own reimplementation. Every hyperparameter is a flag and every run is a shell script; the code, logs and figures are all [on GitHub](https://github.com/shaoweizhang1/reproduction/tree/main/deepproblog).
 
 Five of the six experiments worked. One did not, and figuring out why turned out to be more interesting than the final number.
 
@@ -359,7 +359,7 @@ Five of the six experiments worked. One did not, and figuring out why turned out
 
 The task is to add two MNIST images. A query looks like `addition(a, b, 8)`, where `a` and `b` are the images. The whole <span class="accent-letter">Deep</span>ProbLog model is the same two lines from earlier: a neural AD for `digit/2`, and one Prolog rule for addition. The baseline is a CNN that sees the same two images and predicts the sum directly as one of 19 classes.
 
-![T1: training loss and test accuracy against iterations, for DeepProbLog and two CNN baselines](https://raw.githubusercontent.com/shaoweizhang1/DeepProbLog_Reproduction/main/deepproblog_demo/figs/t1.png)
+![T1: training loss and test accuracy against iterations, for DeepProbLog and two CNN baselines](https://raw.githubusercontent.com/shaoweizhang1/reproduction/main/deepproblog/figs/t1.png)
 
 | Model                                          | Test accuracy |
 | ---------------------------------------------- | ------------- |
@@ -379,7 +379,7 @@ The paper only released the shared-encoder baseline. The CNN shown in the paper'
 
 The task is the same, except each argument is now a *list* of images representing a multi-digit number. The network does not change; only the logic program gets two extra lines. It is trained on single digits and then tested on three-digit numbers, with no retraining in between.
 
-![T2: training loss and test accuracy against iterations, for DeepProbLog and the CNN baseline](https://raw.githubusercontent.com/shaoweizhang1/DeepProbLog_Reproduction/main/deepproblog_demo/figs/t2.png)
+![T2: training loss and test accuracy against iterations, for DeepProbLog and the CNN baseline](https://raw.githubusercontent.com/shaoweizhang1/reproduction/main/deepproblog/figs/t2.png)
 
 | Model                                          | Test accuracy |
 | ---------------------------------------------- | ------------- |
@@ -439,7 +439,7 @@ My best checkpoint reaches 97.5%, compared with the paper's reported 96–97%, s
 
 That is a 23-point difference from the same training run.
 
-![T5: training loss and dev accuracy against iterations](https://raw.githubusercontent.com/shaoweizhang1/DeepProbLog_Reproduction/main/deepproblog_demo/figs/t5.png)
+![T5: training loss and dev accuracy against iterations](https://raw.githubusercontent.com/shaoweizhang1/reproduction/main/deepproblog/figs/t5.png)
 
 Dev accuracy reaches 98% around iteration 570 and then moves between roughly 90% and 97% for another few hundred iterations. Around iteration 900, the training loss suddenly jumps from a few tenths to around 2–3 and never recovers, while dev accuracy falls with it. The final model is the one that scores 74.0% in the table.
 
@@ -453,7 +453,7 @@ Three things are learned at the same time: one network reads an image of the coi
 
 This is the one experiment I could not reproduce. The paper reports 100% test accuracy after five epochs on 256 training examples, with both networks correct and the learned probabilistic parameters matching the distribution used to generate the data. My reconstruction reaches 81.2% test accuracy, while the colour network reaches only 18.8%, below chance for three classes. Different runs move by several points, but none came close to 100%.
 
-![T6: dev accuracy and training loss for the coin-ball reconstruction](https://raw.githubusercontent.com/shaoweizhang1/DeepProbLog_Reproduction/main/deepproblog_demo/figs/t6.png)
+![T6: dev accuracy and training loss for the coin-ball reconstruction](https://raw.githubusercontent.com/shaoweizhang1/reproduction/main/deepproblog/figs/t6.png)
 
 I want to be careful about what "could not reproduce" means here, because several important pieces of the original experiment are missing.
 

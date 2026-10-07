@@ -20,23 +20,31 @@ The paper's example (Example 1), written in different ways — the Pro<span clas
 <div class="code-compare">
 <div>
 <p class="code-compare-label">Prolog</p>
-<pre><code>likes(X,Y) :- friendof(X,Y).
+
+```problog
+likes(X,Y) :- friendof(X,Y).
 likes(X,Y) :- friendof(X,Z), likes(Z,Y).
 
 friendof(john,mary).
 friendof(mary,pedro).
 friendof(mary,tom).
-friendof(pedro,tom).</code></pre>
+friendof(pedro,tom).
+```
+
 </div>
 <div>
 <p class="code-compare-label">Pro<span class="accent-letter">b</span>Log</p>
-<pre><code>1.0::likes(X,Y) :- friendof(X,Y).
+
+```problog
+1.0::likes(X,Y) :- friendof(X,Y).
 0.8::likes(X,Y) :- friendof(X,Z), likes(Z,Y).
 
 0.5::friendof(john,mary).
 0.5::friendof(mary,pedro).
 0.5::friendof(mary,tom).
-0.5::friendof(pedro,tom).</code></pre>
+0.5::friendof(pedro,tom).
+```
+
 </div>
 </div>
 
@@ -199,7 +207,7 @@ Section 6 puts all three tricks to work on real data — the biological link-dis
 <div class="example-pager-panel" id="example-panel-1">
 <p class="example-desc">A hidden Markov model: tomorrow's weather depends probabilistically on today's, recursively until ten days. Nothing about Pro<span class="accent-letter">b</span>Log is HMM-specific here — this is just ordinary recursion over a time index, with the transition probabilities written as annotated disjunctions.</p>
 
-```prolog
+```problog
 0.5::weather(sun,0) ; 0.5::weather(rain,0) <- true.
 
 0.6::weather(sun,T) ; 0.4::weather(rain,T) <- T>0, Tprev is T-1, weather(sun,Tprev).
@@ -216,7 +224,7 @@ weather(sun,10): 0.33335081
 <div class="example-pager-panel" id="example-panel-2">
 <p class="example-desc">This is indeed the example motivates the paper — Section 2 talks at length about link discovery in biological networks but never actually writes out the code. Here it is: nodes connected by probabilistic edges, querying whether a path exists between two of them — <code>path/2</code> here has the same recursive shape as <code>likes/2</code> in our own SLD-tree walkthrough above, just renamed.</p>
 
-```prolog
+```problog
 0.6::edge(1,2).
 0.1::edge(1,3).
 0.4::edge(2,5).
@@ -241,7 +249,7 @@ path(1,6): 0.2167296
 <div class="example-pager-panel" id="example-panel-3">
 <p class="example-desc">The classic "smokers" example: stress causes smoking, smoking spreads through friendships, smoking causes asthma. This one also brings in <code>evidence/2</code> — pinning down that person 2 definitely smokes (and definitely isn't influenced by person 4) — which conditions every other query on those facts being true, rather than just computing unconditional probabilities.</p>
 
-```prolog
+```problog
 0.3::stress(X) :- person(X).
 0.2::influences(X,Y) :- person(X), person(Y).
 

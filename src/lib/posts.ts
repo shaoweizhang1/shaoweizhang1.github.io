@@ -8,6 +8,8 @@ import remarkMath from "remark-math";
 import remarkRehype from "remark-rehype";
 import rehypeKatex from "rehype-katex";
 import rehypePrettyCode from "rehype-pretty-code";
+import { createHighlighter } from "shiki";
+import { problog } from "./problog-grammar";
 import rehypeSlug from "rehype-slug";
 import rehypeStringify from "rehype-stringify";
 import GithubSlugger from "github-slugger";
@@ -138,7 +140,9 @@ export async function getPostBySlug(slug: string): Promise<Post> {
     .use(rehypeSlug)
     .use(rehypePrettyCode, {
       theme: { light: "github-light", dark: "github-dark" },
-      defaultLang: "prolog",
+      defaultLang: "problog",
+      getHighlighter: (options) =>
+        createHighlighter({ ...options, langs: [...(options.langs ?? []), problog] }),
     })
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(content);

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getAllPosts, getPostBySlug } from "@/lib/posts";
+import { CodeCompareFit } from "@/components/code-compare-fit";
 import { ReadingProgress } from "@/components/reading-progress";
 import { TagLink } from "@/components/tag-link";
 import "katex/dist/katex.min.css";
@@ -79,6 +80,7 @@ export default async function PostPage({
         className="prose prose-neutral max-w-none dark:prose-invert"
         dangerouslySetInnerHTML={{ __html: post.contentHtml }}
       />
+      <CodeCompareFit />
     </article>
   );
 }
